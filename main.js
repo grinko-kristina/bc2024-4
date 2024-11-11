@@ -27,8 +27,26 @@ const requestListener = async function (req, res) {
                 if (error.code === 'ENOENT') {
                     res.statusCode = 404;
                     res.end('Not Found');
+                } else {
+                    res.statusCode = 500;
+                    res.end('Internal Server Error')
                 }
             }
+            break;
+        case 'PUT':
+            const chunks = [];
+            req.on('data', chunk => chunks.push(chunk));
+            req.on('end', async () => {
+                try {
+                    const imageData = Buffer.concat(chunks);
+                    await fs.writeFile(filePath, imageData);
+                    res.statusCode = 201;
+                    res.end('Created');
+                } catch (error) {
+                    res.statusCode = 500;
+                    res.end('Internal Server Error');
+                }
+            });
             break;
         default:
             res.statusCode = 405;
